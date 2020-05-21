@@ -1,0 +1,87 @@
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+
+name: Gravity.Abstraction.Cli.$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
+
+pool:
+  name: Default
+
+variables:
+- name: 'buildConfiguration'
+  value: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: restore dependencies
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    feedsToUse: 'select'
+    vstsFeed: '6ed1caf9-de4f-48e8-8276-201533d86a19'
+    verbosityRestore: 'Diagnostic'
+
+- task: DotNetCoreCLI@2
+  displayName: build projects
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- powershell: |
+   [xml]$doc = Get-Content azure-settings.runsettings
+   $doc.RunSettings.TestRunParameters.ChildNodes.Item(2).value = '$(Build.BuildNumber)'
+   $doc.Save("azure-settings-prod.runsettings")
+  displayName: create test settings > override with production parameters
+
+- task: DotNetCoreCLI@2
+  displayName: execute automated testing
+  inputs:
+    command: 'test'
+    projects: '**/*[Tt]ests/*.csproj'
+    arguments: '--configuration $(buildConfiguration) -s azure-settings-prod.runsettings'
+    testRunTitle: 'Automation Testing --- $(Build.BuildNumber)'
+
+- powershell: |
+   Remove-Item azure-settings-prod.runsettings
+  displayName: cleanup
+
+- task: DotNetCoreCLI@2
+  displayName: create package
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/!(*[Tt]ests)/*.csproj'
+    versioningScheme: 'byBuildNumber'
+    verbosityPack: 'Diagnostic'
+    packDirectory: $(Build.ArtifactStagingDirectory)
+
+- task: NuGetCommand@2
+  displayName: push package
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'nuget.org'
+
+- task: PowerShell@2
+  displayName: 'parse build version for GitHub tag'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # setup
+      [regex]$pattern = '(\d+.?)+'
+      $version        = $pattern.Matches('$(Build.BuildNumber)') | foreach-object {$_.Value}      
+      # set value
+      Write-Host "##vso[task.setvariable variable=buildVersion]$version"
+
+- task: GitHubRelease@1
+  displayName: 'create GitHub tag'
+  inputs:
+    gitHubConnection: 'GitHub connection - Gravity API'
+    repositoryName: 'gravity-api/gravity-abstraction-cli'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'userSpecifiedTag'
+    tag: 'v$(buildVersion)'
+    title: 'Production v$(buildVersion)'
+    releaseNotesSource: 'inline'
+    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogType: 'commitBased'
