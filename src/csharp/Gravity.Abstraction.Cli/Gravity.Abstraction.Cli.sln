@@ -7,8 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gravity.Abstraction.Cli", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4722E7F3-08C7-45E0-BDFE-8D7F6B3412BC}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\azure-pipelines-csharp.yml = ..\..\..\azure-pipelines-csharp.yml
-		..\..\..\azure-settings.runsettings = ..\..\..\azure-settings.runsettings
+		..\..\..\azure_pipelines_csharp.yml = ..\..\..\azure_pipelines_csharp.yml
+		..\..\..\azure_settings.runsettings = ..\..\..\azure_settings.runsettings
 		..\..\..\README.md = ..\..\..\README.md
 	EndProjectSection
 EndProject

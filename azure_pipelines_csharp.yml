@@ -45,7 +45,7 @@ steps:
     targetType: 'inline'
     script: |
       # read test settings
-      [xml]$runSettings = Get-Content azure_settings_mstest.runsettings
+      [xml]$runSettings = Get-Content azure_settings.runsettings
       #
       # setup
       $buildNumber       = $runSettings.SelectSingleNode("//Parameter[@name='Build.Number']")
