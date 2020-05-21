@@ -42,8 +42,8 @@ namespace CliFactorySample
             Console.ReadLine();
         }
     }
-/*
 }
+/*
 ----------
 - OUTPUT -
 ----------
