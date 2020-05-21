@@ -43,6 +43,7 @@ namespace CliFactorySample
         }
     }
 /*
+}
 ----------
 - OUTPUT -
 ----------
@@ -56,5 +57,4 @@ MANE arg2; VALUE: 1
 MANE arg3; VALUE: 0.5
 MANE arg4; VALUE: true
 */
-}
 ```
