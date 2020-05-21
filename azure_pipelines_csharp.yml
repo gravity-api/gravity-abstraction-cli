@@ -95,6 +95,15 @@ steps:
     versioningScheme: 'byBuildNumber'
     verbosityPack: 'Diagnostic'
 
+# push package to nuget.org
+- task: NuGetCommand@2
+  displayName: push package
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'nuget.org'
+
 # extract build version from Build.BuildNumber parameter and pass it as Build.Version
 - task: PowerShell@2
   displayName: 'parse build version for git-hub tag'
