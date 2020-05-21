@@ -2,6 +2,9 @@
 
 name: Gravity.Abstraction.Cli.$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
 
+trigger:
+- master
+
 pool:
   name: Default
 
