@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Gravity.Abstraction.Cli
@@ -28,6 +31,11 @@ namespace Gravity.Abstraction.Cli
         /// Gets a pattern to extract argument value.
         /// </summary>
         public virtual string ValuePattern => "(?<=:).*$";
+
+        /// <summary>
+        /// Gets the pattern to extract nested CLI or macros as parameters.
+        /// </summary>
+        public virtual string NestedPattern => @"\{\{\$.*?(?<={{[$]).*}}";
 
         /// <summary>
         /// Creates a new <see cref="CliFactory"/> instance.
@@ -85,16 +93,47 @@ namespace Gravity.Abstraction.Cli
 
             // clean CLI
             var cleanCli = Regex.Match(input: cli, pattern: CliPattern).Value.Trim();
+            var map = GetNestedMap(cleanCli);
+            foreach (var item in map)
+            {
+                cleanCli = cleanCli.Replace(item.Key, item.Value);
+            }
 
             // get all arguments as list
-            var arguments = Regex
+            var argumentsList = Regex
                 .Matches(cleanCli, ArgumentPattern)
                 .Cast<Match>()
                 .Select(i => i.Value.Trim())
                 .Where(i => !string.IsNullOrEmpty(i));
 
-            // results
-            return GetResults(arguments);
+            // get
+            var arguments = GetResults(argumentsList);
+            var argumentsJson = JsonSerializer.Serialize(arguments);
+
+            // setup
+            foreach (var item in map)
+            {
+                argumentsJson = argumentsJson.Replace(item.Value, item.Key);
+            }
+
+            // get
+            return JsonSerializer.Deserialize<IDictionary<string, string>>(argumentsJson);
+        }
+
+        private IDictionary<string, string> GetNestedMap(string cleanCli)
+        {
+            // get nested
+            var nested = Regex.Matches(cleanCli, NestedPattern).Select(i => i.Value);
+
+            // map
+            var map = new Dictionary<string, string>();
+            foreach (var item in nested)
+            {
+                map[item] = Convert.ToBase64String(Encoding.UTF8.GetBytes(item));
+            }
+
+            // get
+            return map;
         }
 
         private IDictionary<string, string> GetResults(IEnumerable<string> arguments)
