@@ -92,7 +92,7 @@ namespace Gravity.Abstraction.Cli
             }
 
             // clean CLI
-            var cleanCli = Regex.Match(input: cli, pattern: CliPattern).Value.Trim();
+            var cleanCli = Regex.Match(input: cli, pattern: CliPattern, RegexOptions.Singleline).Value.Trim();
             var map = GetNestedMap(cleanCli);
             foreach (var item in map)
             {
@@ -101,7 +101,7 @@ namespace Gravity.Abstraction.Cli
 
             // get all arguments as list
             var argumentsList = Regex
-                .Matches(cleanCli, ArgumentPattern)
+                .Matches(cleanCli, ArgumentPattern, RegexOptions.Singleline)
                 .Cast<Match>()
                 .Select(i => i.Value.Trim())
                 .Where(i => !string.IsNullOrEmpty(i));
@@ -144,8 +144,8 @@ namespace Gravity.Abstraction.Cli
             // iterate
             foreach (var argument in arguments)
             {
-                var key = Regex.Match(argument, KeyPattern).Value;
-                results[key] = Regex.Match(argument, ValuePattern).Value ?? string.Empty;
+                var key = Regex.Match(argument, KeyPattern, RegexOptions.Singleline).Value;
+                results[key] = Regex.Match(argument, ValuePattern, RegexOptions.Singleline).Value ?? string.Empty;
             }
 
             // arguments collection
@@ -176,7 +176,7 @@ namespace Gravity.Abstraction.Cli
             cli ??= string.Empty;
 
             // exit conditions
-            if (!Regex.IsMatch(cli, CliPattern))
+            if (!Regex.IsMatch(cli, CliPattern, RegexOptions.Singleline))
             {
                 CliCompliant = false;
                 return;

@@ -1,0 +1,60 @@
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+
+name: Rhino.Api.$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: windows-2022
+
+variables:
+# Library
+- group: browserstack.com
+- group: gravity.api
+- group: nuget.org
+
+# Build
+- name: 'Build.Configuration'
+  value: 'Release'
+
+# Test Settings
+- name: 'Parallel.Workers'
+  value: '1'
+
+- name: 'Test.Settings.FileName.Deploy'
+  value: './test/SettingsMsTestDeploy.runsettings'
+
+- name: 'Test.Settings.FileName.Development'
+  value: './test/SettingsMsTest.runsettings'
+
+# Git
+- name: 'Git.Repository'
+  value: 'gravity-api/gravity-abstraction-cli'
+
+- name: 'Git.Connection'
+  value: 'github.com'
+
+- name: 'Git.ReleaseType'
+  value: 'Production'
+
+- name: 'Git.PreviewRelease'
+  value: false
+
+# Conditions (switch)
+- name: 'InvokeUnitTests'
+  value: true
+
+- name: 'InvokeIntegrationTests'
+  value: false
+
+- name: 'CreateAndPushPackages'
+  value: true
+
+- name: 'CreateGitTag'
+  value: true
+
+stages:
+- template: AzurePipeline.yaml
