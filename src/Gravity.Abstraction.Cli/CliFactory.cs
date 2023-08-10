@@ -20,7 +20,7 @@ namespace Gravity.Abstraction.Cli
         /// <summary>
         /// Gets a pattern to identify all arguments within a command line.
         /// </summary>
-        public virtual string ArgumentPattern => @"(?<=--)(.*?)(?=\s+--|$)";
+        public virtual string ArgumentPattern => @"(?<=--)(.*?)(?=\s+--\w+|$)";
 
         /// <summary>
         /// Gets a pattern to extract argument name (key).
